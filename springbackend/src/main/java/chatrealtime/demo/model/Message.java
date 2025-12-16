@@ -1,5 +1,6 @@
 package chatrealtime.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,5 +25,6 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name="room_id")
+    @JsonIgnore
     private Room room;
 }

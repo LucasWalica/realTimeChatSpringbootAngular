@@ -9,9 +9,11 @@ import chatrealtime.demo.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,16 +51,26 @@ public class AuthController {
     };
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginDto, HttpServletResponse response){
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
-        );
-        String token = jwtService.generateToken(loginDto.getUsername());
-        Cookie cookie = new Cookie("jwt", token);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(24*60*60);
-        response.addCookie(cookie);
-        return ResponseEntity.ok(Map.of("message", "Login exitoso"));
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginDto, HttpServletResponse response) {
+        try {
+            // Esto lanzará una excepción si el usuario/password no coinciden
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
+            );
+
+            String token = jwtService.generateToken(loginDto.getUsername());
+            Cookie cookie = new Cookie("jwt", token);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(false); // Cambia a true en producción (HTTPS)
+            cookie.setPath("/");
+            cookie.setMaxAge(24 * 60 * 60);
+            response.addCookie(cookie);
+
+            return ResponseEntity.ok(Map.of("message", "Login exitoso"));
+
+        } catch (AuthenticationException e) {
+            // Si entra aquí, el 403 era en realidad un "Usuario o password incorrectos"
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Credenciales inválidas"));
+        }
     }
 }

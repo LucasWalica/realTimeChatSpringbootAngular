@@ -1,0 +1,63 @@
+package chatrealtime.demo.controller;
+
+import chatrealtime.demo.dto.ChatMessageDTO;
+import chatrealtime.demo.model.Message;
+import chatrealtime.demo.service.AIService;
+import chatrealtime.demo.service.MessageService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
+
+import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@Controller
+@RequiredArgsConstructor
+public class ChatController {
+    private final SimpMessagingTemplate messagingTemplate;
+    private final MessageService messageService;
+    private final AIService aiService;
+
+    @MessageMapping("/chat/{roomId}")
+    public void handleMessage(@DestinationVariable Long roomId,
+                              @Payload String content,
+                              Principal principal) {
+
+        String username = (principal != null) ? principal.getName() : "Usuario";
+
+        // 1. Procesar y enviar el mensaje del usuario
+        ChatMessageDTO userDto = buildDto(content, username, "USER");
+        messageService.saveMessage(roomId, userDto);
+        messagingTemplate.convertAndSend("/topic/room/" + roomId, userDto);
+
+        // 2. ¿Debe responder la IA?
+        boolean isPrivateBotRoom = (roomId == 0); // Definimos 0 como sala privada con el Bot
+        boolean botMentioned = content.toLowerCase().contains("@bot");
+
+        if (isPrivateBotRoom || botMentioned) {
+            // Quitamos el "@bot" del texto para que la IA no se confunda
+            String aiPrompt = content.replace("@bot", "").trim();
+
+            aiService.generateResponse(aiPrompt).thenAccept(aiReply -> {
+                ChatMessageDTO botDto = buildDto(aiReply, "AI Buddy", "BOT");
+
+                messageService.saveMessage(roomId, botDto);
+                messagingTemplate.convertAndSend("/topic/room/" + roomId, botDto);
+            });
+        }
+    }
+
+    private ChatMessageDTO buildDto(String content, String sender, String type) {
+        return ChatMessageDTO.builder()
+                .content(content)
+                .senderName(sender)
+                .timestamp(LocalDateTime.now().toString())
+                .type(type)
+                .build();
+    }
+}

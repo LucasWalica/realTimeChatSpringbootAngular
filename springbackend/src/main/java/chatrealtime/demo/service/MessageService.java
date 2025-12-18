@@ -1,6 +1,6 @@
 package chatrealtime.demo.service;
 
-import chatrealtime.demo.dto.MessageRequestDTO;
+import chatrealtime.demo.dto.ChatMessageDTO;
 import chatrealtime.demo.model.Message;
 import chatrealtime.demo.model.Room;
 import chatrealtime.demo.model.User;
@@ -22,18 +22,22 @@ public class MessageService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Message saveMessage(Long roomId, MessageRequestDTO dto){
+    public Message saveMessage(Long roomId, ChatMessageDTO dto) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Sala no encontrada"));
-        User sender = userRepository.findById(dto.getSenderId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Si el remitente es la IA, podemos buscar un usuario "sistema" o manejarlo
+        User sender = userRepository.findByUsername(dto.getSenderName())
+                .orElse(null); // Permitimos null si es un bot, o maneja un usuario bot pre-creado
 
         Message message = Message.builder()
                 .content(dto.getContent())
                 .sender(sender)
                 .room(room)
+                .type(dto.getType())
                 .timestamp(LocalDateTime.now())
                 .build();
+
         return messageRepository.save(message);
     }
 

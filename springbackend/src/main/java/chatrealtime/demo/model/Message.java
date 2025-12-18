@@ -17,6 +17,9 @@ public class Message {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(nullable = false)
+    private String type;
+
     private LocalDateTime timestamp;
 
     @ManyToOne
@@ -27,4 +30,6 @@ public class Message {
     @JoinColumn(name="room_id")
     @JsonIgnore
     private Room room;
+
+
 }

@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos Globales */
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Esto asegura que todos los bordes usen tu color por defecto */
+  * {
+    @apply border-border;
+  }
+}
+
+/* Glassmorphism Utilities */
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-card {
+    background: rgba(30, 30, 40, 0.4);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(135, 80, 166, 0.2);
+  }
+
+  .glow-border {
+    box-shadow: 0 0 20px rgba(135, 80, 166, 0.3),
+                0 0 40px rgba(135, 80, 166, 0.1);
+  }
+}

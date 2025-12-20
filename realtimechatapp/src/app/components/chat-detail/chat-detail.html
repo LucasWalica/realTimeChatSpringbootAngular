@@ -1,0 +1,99 @@
+<div class="flex-1 flex flex-col bg-background relative overflow-hidden h-screen">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary rounded-full mix-blend-multiply filter blur-[150px] opacity-10"></div>
+    <div class="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-neon-blue rounded-full mix-blend-multiply filter blur-[150px] opacity-10"></div>
+  </div>
+
+  @if (!chatId()) {
+    <div class="flex-1 flex items-center justify-center relative z-10 text-center">
+      <div>
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-[28px] glass border-primary/30 mb-6 glow-border">
+          <span class="material-symbols-rounded text-primary text-4xl">auto_awesome</span>
+        </div>
+        <h3 class="text-foreground text-xl font-bold mb-2">Select a conversation</h3>
+        <p class="text-muted-foreground">Choose a chat to start messaging</p>
+      </div>
+    </div> 
+  } @else {
+    <header class="glass border-b border-border p-6 relative z-10 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <div class="w-12 h-12 rounded-[18px] overflow-hidden ring-2 ring-primary/30">
+            <img src="https://avatar.iran.liara.run/public/31" alt="User" class="w-full h-full object-cover" />
+          </div>
+          <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-secondary rounded-full border-2 border-background"></div>
+        </div>
+        <div>
+          <h3 class="text-foreground font-bold">Sarah Johnson</h3>
+          <p class="text-secondary text-sm">Online</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="w-11 h-11 rounded-[20px] glass hover:bg-white/10 flex items-center justify-center transition-all">
+          <span class="material-symbols-rounded text-muted-foreground">call</span>
+        </button>
+        <button class="w-11 h-11 rounded-[20px] glass hover:bg-white/10 flex items-center justify-center transition-all">
+          <span class="material-symbols-rounded text-muted-foreground">videocam</span>
+        </button>
+      </div>
+    </header>
+
+    <div #scrollContainer class="flex-1 overflow-y-auto p-6 space-y-6 relative z-10">
+      @for (msg of messages(); track msg.id) {
+        <div [ngClass]="{'justify-end': msg.sender === 'me', 'justify-start': msg.sender !== 'me'}" class="flex">
+          <div [ngClass]="{'max-w-[70%]': msg.sender !== 'bot', 'max-w-[80%]': msg.sender === 'bot'}">
+            
+            @if (msg.sender === 'bot') {
+              <div class="flex items-center gap-2 mb-2 ml-2 text-neon-blue">
+                <span class="material-symbols-rounded text-sm">smart_toy</span>
+                <span class="text-xs font-medium uppercase tracking-wider">AI Assistant</span>
+              </div>
+            }
+
+            <div [ngClass]="{
+              'bg-gradient-to-br from-primary to-custom-amethist text-white shadow-lg glow-border': msg.sender === 'me',
+              'glass-card border-neon-blue/30': msg.sender === 'bot',
+              'glass border-border': msg.sender === 'other'
+            }" class="rounded-[24px] px-6 py-4">
+              @if (msg.isCommand && msg.sender === 'me') {
+                <div class="flex items-center gap-1.5 mb-2 opacity-80 text-xs">
+                  <span class="material-symbols-rounded text-xs">bolt</span>
+                  <span>Bot Command</span>
+                </div>
+              }
+              <p class="whitespace-pre-wrap break-words">{{ msg.text }}</p>
+            </div>
+            <p class="text-xs text-muted-foreground mt-2 px-2" [ngClass]="{'text-right': msg.sender === 'me'}">
+              {{ msg.time }}
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <footer class="glass border-t border-border p-6 relative z-10">
+      <div class="flex items-end gap-3">
+        <button class="w-12 h-12 rounded-[20px] glass hover:scale-105 transition-all flex items-center justify-center">
+          <span class="material-symbols-rounded text-muted-foreground">add</span>
+        </button>
+        
+        <div class="flex-1 relative">
+          <textarea 
+            [(ngModel)]="messageText"
+            (keydown.enter)="handleSend(); $event.preventDefault()"
+            placeholder="Type a message... (/bot help)"
+            class="w-full bg-input border border-border rounded-[24px] py-4 px-6 text-foreground focus:border-primary focus:outline-none transition-all resize-none min-h-[56px] max-h-32"
+          ></textarea>
+        </div>
+
+        <button 
+          (click)="handleSend()"
+          [disabled]="!messageText().trim()"
+          class="w-12 h-12 rounded-[20px] bg-primary text-white flex items-center justify-center transition-all hover:scale-105 disabled:opacity-50"
+        >
+          <span class="material-symbols-rounded">send</span>
+        </button>
+      </div> 
+    </footer>
+  }
+</div>

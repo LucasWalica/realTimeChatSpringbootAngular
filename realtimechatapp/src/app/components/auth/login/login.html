@@ -1,0 +1,40 @@
+<div class="min-h-screen flex items-center justify-center p-6 bg-background relative overflow-hidden">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
+  </div>
+
+  <div class="w-full max-w-md relative z-10">
+    <div class="glass-card rounded-[32px] p-8 glow-border">
+      <h2 class="text-foreground text-2xl font-bold mb-6 text-center">Welcome Back</h2>
+      
+      <form (ngSubmit)="onLogin()" class="space-y-6">
+        <div class="space-y-2">
+          <label class="text-sm ml-2 text-muted-foreground">Email</label>
+          <div class="relative">
+            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">mail</span>
+            <input type="email" [(ngModel)]="email" name="email" class="w-full bg-input border border-border rounded-[20px] py-4 px-12 text-foreground focus:border-primary focus:outline-none transition-all">
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm ml-2 text-muted-foreground">Password</label>
+          <div class="relative">
+            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">lock</span>
+            <input [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" name="password" class="w-full bg-input border border-border rounded-[20px] py-4 px-12 text-foreground focus:border-primary focus:outline-none transition-all">
+            <button type="button" (click)="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <span class="material-symbols-rounded">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-primary text-white py-4 rounded-[20px] font-bold hover:shadow-lg hover:shadow-primary/40 transition-all transform hover:scale-[1.02]">
+          SIGN IN
+        </button>
+      </form>
+
+      <p class="mt-8 text-center text-muted-foreground text-sm">
+        New here? <a routerLink="/register" class="text-primary font-bold hover:underline">Create an account</a>
+      </p>
+    </div>
+  </div>
+</div>

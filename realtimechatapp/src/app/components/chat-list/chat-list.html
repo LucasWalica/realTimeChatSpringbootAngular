@@ -1,0 +1,86 @@
+<div class="w-full lg:w-96 h-full flex flex-col glass border-r border-border relative z-20">
+  
+  <div class="p-6 border-b border-border">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-foreground font-bold text-xl uppercase tracking-widest">Messages</h2>
+      <button
+        (click)="onLogout()"
+        class="w-10 h-10 rounded-xl glass hover:bg-destructive/20 flex items-center justify-center transition-all group border border-white/5"
+        title="Logout"
+      >
+        <span class="material-symbols-rounded text-muted-foreground group-hover:text-destructive text-xl">logout</span>
+      </button>
+    </div>
+
+    <div class="group relative">
+      <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary">
+        search
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Search conversations..."
+        class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-12 text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:bg-white/10 focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
+      />
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+    @for (chat of filteredChats(); track chat.id) {
+      <button
+        (click)="onSelectChat(chat.id)"
+        [ngClass]="{
+          'bg-primary/15 border-primary/30 shadow-[0_0_20px_rgba(135,80,166,0.1)]': selectedChatId() === chat.id,
+          'bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/10': selectedChatId() !== chat.id
+        }"
+        class="w-full p-4 rounded-[24px] flex items-center gap-4 transition-all duration-300 border backdrop-blur-sm"
+      >
+        <div class="relative flex-shrink-0">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg ring-1 ring-white/10"
+               [style.background-color]="'#8750A6'">
+            {{ chat.name.charAt(0).toUpperCase() }}
+          </div>
+          @if (chat.online) {
+            <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-secondary rounded-full border-2 border-background shadow-sm"></div>
+          }
+        </div>
+
+        <div class="flex-1 min-w-0 text-left">
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="text-foreground font-semibold truncate text-sm">{{ chat.name }}</h3>
+            <span class="text-muted-foreground text-[10px] flex-shrink-0 font-medium">
+              {{ chat.lastMessage?.timestamp | date:'HH:mm' }}
+            </span>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <p class="text-muted-foreground/80 truncate text-xs pr-2">
+              {{ chat.lastMessage?.content || 'Start a conversation' }}
+            </p>
+            
+            @if (chat.unreadCount > 0) {
+              <span class="flex-shrink-0 min-w-[18px] h-[18px] px-1 bg-primary text-white rounded-lg flex items-center justify-center text-[9px] font-black shadow-lg shadow-primary/20">
+                {{ chat.unreadCount }}
+              </span>
+            }
+          </div>
+        </div>
+      </button>
+    } @empty {
+      <div class="flex flex-col items-center justify-center h-48 text-muted-foreground/40 italic">
+        <span class="material-symbols-rounded text-5xl mb-3">chat_bubble_outline</span>
+        <p class="text-xs">No active chats</p>
+      </div>
+    }
+  </div>
+
+  <div class="p-6 border-t border-border bg-white/[0.01]">
+    <button 
+      (click)="openNewConversation()"
+      class="w-full bg-primary text-white py-4 rounded-2xl flex items-center justify-center gap-3 hover:shadow-[0_8px_20px_rgba(135,80,166,0.3)] transition-all transform active:scale-95 border border-white/10"
+    >
+      <span class="material-symbols-rounded font-bold text-xl">add</span>
+      <span class="font-bold uppercase tracking-[0.2em] text-[10px]">New Chat</span>
+    </button>
+  </div>
+</div>

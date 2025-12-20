@@ -1,50 +1,81 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Auth } from '../../../services/auth-service';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  // Importamos RouterLink para la navegación entre login y register
-  imports: [CommonModule, FormsModule, RouterLink], 
-  templateUrl: './register.html'
+  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  templateUrl: './register.html',
 })
 export class RegisterComponent {
-  // Signals para el estado de la UI
   showPassword = signal(false);
   isLoading = signal(false);
+  errorMessage = signal('');
 
-  // Modelos de datos (puedes usarlos con [(ngModel)] en el HTML)
-  registerData = {
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  };
-username: any;
+  registerForm = new FormGroup({
+    email: new FormControl("", [Validators.required, Validators.email]),
+    username: new FormControl("", [Validators.required, Validators.minLength(5), Validators.maxLength(25)]),
+    password1: new FormControl("", [Validators.required, Validators.minLength(6), Validators.maxLength(20)]),
+    password2: new FormControl("", [Validators.required, Validators.minLength(6), Validators.maxLength(20)])
+  }, {
+    validators: passwordConfirmationValidator("password1", "password2")
+  });
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private auth: Auth) {}
 
   togglePassword() {
     this.showPassword.update(v => !v);
   }
 
   onRegister() {
-    if (this.registerData.password !== this.registerData.confirmPassword) {
-      alert('Las contraseñas no coinciden');
-      return;
-    }
+    if (this.registerForm.invalid) return;
 
     this.isLoading.set(true);
+    this.errorMessage.set('');
 
-    // Simulación de llamada a tu API de Spring Boot
-    console.log('Registrando usuario:', this.registerData);
+    const { username, email, password1 } = this.registerForm.getRawValue();
 
-    setTimeout(() => {
-      this.isLoading.set(false);
-      // Tras el registro exitoso, redirigimos al login
-      this.router.navigate(['/login']);
-    }, 1500);
+    this.auth.register(username!, email!, password1!).subscribe({
+      next: () => {
+        console.log("saliendo")
+        this.isLoading.set(false);
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.log("error", err)
+        this.isLoading.set(false);
+        this.errorMessage.set(err.error?.message || 'Error al crear la cuenta');
+      }
+    });
   }
 }
+
+
+import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
+
+export function passwordConfirmationValidator(
+  controlName: string,
+  matchingControlName: string
+): ValidatorFn {
+  return (formGroup: AbstractControl): ValidationErrors | null => {
+    const passwordControl = formGroup.get(controlName);
+    const confirmPasswordControl = formGroup.get(matchingControlName);
+
+    if (!passwordControl || !confirmPasswordControl) {
+      return null;
+    }
+
+    if (passwordControl.value !== confirmPasswordControl.value) {
+      confirmPasswordControl.setErrors({ passwordMismatch: true });
+    } else {
+      confirmPasswordControl.setErrors(null);
+    }
+
+    return null;
+  };
+}
+
+

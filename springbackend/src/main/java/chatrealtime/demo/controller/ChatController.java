@@ -2,8 +2,10 @@ package chatrealtime.demo.controller;
 
 import chatrealtime.demo.dto.ChatMessageDTO;
 import chatrealtime.demo.model.Message;
+import chatrealtime.demo.model.Room;
 import chatrealtime.demo.service.AIService;
 import chatrealtime.demo.service.MessageService;
+import chatrealtime.demo.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -22,6 +24,7 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageService messageService;
     private final AIService aiService;
+    private final RoomService roomService;
 
     @MessageMapping("/chat/{roomId}")
     public void handleMessage(@DestinationVariable Long roomId,
@@ -35,17 +38,20 @@ public class ChatController {
         messageService.saveMessage(roomId, userDto);
         messagingTemplate.convertAndSend("/topic/room/" + roomId, userDto);
 
-        // 2. ¿Debe responder la IA?
-        boolean isPrivateBotRoom = (roomId == 0); // Definimos 0 como sala privada con el Bot
+        // 2. Verificar si la sala es privada del bot o si mencionaron al bot
+        // Obtenemos la sala para ver si tiene activado el flag isBotRoom
+        Room room = roomService.findRoomById(roomId);
+        boolean isBotRoom = room != null && room.isBotRoom();
         boolean botMentioned = content.toLowerCase().contains("@bot");
 
-        if (isPrivateBotRoom || botMentioned) {
-            // Quitamos el "@bot" del texto para que la IA no se confunda
+        if (isBotRoom || botMentioned) {
+            // Limpiamos la mención para que la IA no se confunda
             String aiPrompt = content.replace("@bot", "").trim();
 
             aiService.generateResponse(aiPrompt).thenAccept(aiReply -> {
                 ChatMessageDTO botDto = buildDto(aiReply, "AI Buddy", "BOT");
 
+                // Guardamos la respuesta de la IA en la DB y la enviamos por Socket
                 messageService.saveMessage(roomId, botDto);
                 messagingTemplate.convertAndSend("/topic/room/" + roomId, botDto);
             });

@@ -5,23 +5,54 @@
 
   <div class="w-full max-w-md relative z-10">
     <div class="glass-card rounded-[32px] p-8 glow-border">
-      <h2 class="text-foreground text-2xl font-bold mb-6 text-center">Join ChatFlow</h2>
+      <h2 class="text-foreground text-2xl font-bold mb-6 text-center tracking-widest uppercase">Join ChatFlow</h2>
       
-      <form (ngSubmit)="onRegister()" class="space-y-5">
-        <div class="space-y-2">
-          <label class="text-sm ml-2 text-muted-foreground">Username</label>
+      <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="space-y-4">
+        @if (errorMessage()) {
+          <div class="bg-destructive/10 border border-destructive/20 text-destructive text-xs p-3 rounded-xl text-center">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <div class="space-y-1">
+          <label class="text-[10px] ml-2 text-muted-foreground uppercase font-bold">Username</label>
           <div class="relative">
-            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">person</span>
-            <input type="text" [(ngModel)]="username" name="username" class="w-full bg-input border border-border rounded-[20px] py-4 px-12 text-foreground focus:border-primary focus:outline-none transition-all">
+            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">person</span>
+            <input type="text" formControlName="username" class="w-full bg-input border border-border rounded-[18px] py-3 px-12 text-foreground focus:border-primary focus:outline-none transition-all text-sm">
           </div>
         </div>
 
-        <button type="submit" class="w-full bg-gradient-to-r from-primary to-custom-amethist text-white py-4 rounded-[20px] font-bold hover:shadow-lg transition-all transform hover:scale-[1.02]">
-          CREATE ACCOUNT
+        <div class="space-y-1">
+          <label class="text-[10px] ml-2 text-muted-foreground uppercase font-bold">Email</label>
+          <div class="relative">
+            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">mail</span>
+            <input type="email" formControlName="email" class="w-full bg-input border border-border rounded-[18px] py-3 px-12 text-foreground focus:border-primary focus:outline-none transition-all text-sm">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] ml-2 text-muted-foreground uppercase font-bold">Password</label>
+          <div class="relative">
+            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">lock</span>
+            <input [type]="showPassword() ? 'text' : 'password'" formControlName="password1" class="w-full bg-input border border-border rounded-[18px] py-3 px-12 text-foreground focus:border-primary focus:outline-none transition-all text-sm">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] ml-2 text-muted-foreground uppercase font-bold">Confirm Password</label>
+          <div class="relative">
+            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">verified_user</span>
+            <input [type]="showPassword() ? 'text' : 'password'" formControlName="password2" class="w-full bg-input border border-border rounded-[18px] py-3 px-12 text-foreground focus:border-primary focus:outline-none transition-all text-sm">
+          </div>
+        </div>
+
+        <button type="submit" [disabled]="registerForm.invalid || isLoading()" 
+                class="w-full bg-gradient-to-r from-primary to-custom-amethist text-white py-4 rounded-[18px] font-bold mt-4 hover:shadow-lg transition-all transform active:scale-95 disabled:opacity-50 uppercase tracking-widest text-xs">
+          {{ isLoading() ? 'Creating Account...' : 'Create Account' }}
         </button>
       </form>
 
-      <p class="mt-8 text-center text-muted-foreground text-sm">
+      <p class="mt-6 text-center text-muted-foreground text-xs uppercase tracking-tighter">
         Already have an account? <a routerLink="/login" class="text-primary font-bold hover:underline">Log in</a>
       </p>
     </div>

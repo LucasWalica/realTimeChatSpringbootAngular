@@ -1,5 +1,6 @@
 package chatrealtime.demo.controller;
 
+import chatrealtime.demo.dto.RoomDTO;
 import chatrealtime.demo.model.Room;
 import chatrealtime.demo.model.User;
 import chatrealtime.demo.service.RoomService;
@@ -20,15 +21,15 @@ public class RoomController {
     private final RoomService roomService;
     private final UserService userService;
     @GetMapping
-    public ResponseEntity<List<Room>> getMyRooms(@AuthenticationPrincipal UserDetails userDetails){
+    public ResponseEntity<List<RoomDTO>> getMyRooms(@AuthenticationPrincipal UserDetails userDetails){
         User user = userService.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
 
-        return ResponseEntity.ok(roomService.findRoomsByUser(user.getId()));
+        return ResponseEntity.ok(roomService.findRoomsDTOByUser(user.getId()));
     }
 
     @PostMapping("private/{targetUserId}")
-    public ResponseEntity<Room> createPrivateChat(
+    public ResponseEntity<RoomDTO> createPrivateChat(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long targetUserId) {
         return ResponseEntity.ok(

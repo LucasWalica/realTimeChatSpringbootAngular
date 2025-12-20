@@ -40,7 +40,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-chat")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOrigins("http://localhost:4200") // ❌ No uses setAllowedOriginPatterns("*") con cookies
+                .setAllowedOriginPatterns("http://localhost:4200")
+                .withSockJS()
+                .setSessionCookieNeeded(true); // Ayuda a SockJS con las cookies
     }
 
     @Override

@@ -1,28 +1,43 @@
 import { Component, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Auth } from '../../../services/auth-service';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink],
   templateUrl: './login.html'
 })
 export class LoginComponent {
-  email = '';
-  password = '';
   showPassword = signal(false);
+  isLoading = signal(false);
+  errorMessage = signal('');
 
-  constructor(private router: Router) {}
+  loginForm = new FormGroup({
+    username: new FormControl("", [Validators.required]),
+    password: new FormControl("", [Validators.required])
+  });
 
-  togglePassword() {
-    this.showPassword.update(v => !v);
-  }
+  constructor(private router: Router, private auth: Auth) {}
 
   onLogin() {
-    // Aquí iría tu llamada al AuthService
-    console.log('Login attempt', this.email);
-    this.router.navigate(['/chat-list']);
+    if (this.loginForm.invalid) return;
+
+    this.isLoading.set(true);
+    const { username, password } = this.loginForm.getRawValue();
+
+    this.auth.login(username!, password!).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        // Al usar HttpOnly cookies, Spring Boot ya envió la cookie
+        this.router.navigate(['/dashboard']); 
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMessage.set('Credenciales inválidas');
+      }
+    });
   }
 }

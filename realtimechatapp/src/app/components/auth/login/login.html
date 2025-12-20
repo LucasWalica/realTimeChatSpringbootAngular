@@ -4,37 +4,83 @@
   </div>
 
   <div class="w-full max-w-md relative z-10">
-    <div class="glass-card rounded-[32px] p-8 glow-border">
-      <h2 class="text-foreground text-2xl font-bold mb-6 text-center">Welcome Back</h2>
+    <div class="glass-card rounded-[32px] p-8 glow-border shadow-2xl">
+      <div class="flex flex-col items-center mb-8">
+        <div class="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
+          <span class="material-symbols-rounded text-primary text-3xl">login</span>
+        </div>
+        <h2 class="text-foreground text-2xl font-bold text-center tracking-widest uppercase">Welcome Back</h2>
+        <p class="text-muted-foreground text-xs mt-2 italic">Secure access to your conversations</p>
+      </div>
       
-      <form (ngSubmit)="onLogin()" class="space-y-6">
-        <div class="space-y-2">
-          <label class="text-sm ml-2 text-muted-foreground">Email</label>
-          <div class="relative">
-            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">mail</span>
-            <input type="email" [(ngModel)]="email" name="email" class="w-full bg-input border border-border rounded-[20px] py-4 px-12 text-foreground focus:border-primary focus:outline-none transition-all">
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-5">
+        
+        @if (errorMessage()) {
+          <div class="bg-destructive/10 border border-destructive/20 text-destructive text-[11px] p-3 rounded-xl text-center animate-shake">
+            {{ errorMessage() }}
           </div>
+        }
+
+        <div class="space-y-1">
+          <label class="text-[10px] ml-2 text-muted-foreground uppercase font-bold tracking-widest">Username</label>
+          <div class="relative group">
+            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm transition-colors group-focus-within:text-primary">
+              person
+            </span>
+            <input 
+              type="text" 
+              formControlName="username" 
+              placeholder="Enter your username"
+              class="w-full bg-input border border-border rounded-[18px] py-4 px-12 text-foreground focus:border-primary/50 focus:outline-none transition-all text-sm placeholder:text-muted-foreground/30"
+            >
+          </div>
+          @if (loginForm.get('username')?.touched && loginForm.get('username')?.invalid) {
+            <span class="text-[10px] text-destructive ml-2">Username is required</span>
+          }
         </div>
 
-        <div class="space-y-2">
-          <label class="text-sm ml-2 text-muted-foreground">Password</label>
-          <div class="relative">
-            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">lock</span>
-            <input [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" name="password" class="w-full bg-input border border-border rounded-[20px] py-4 px-12 text-foreground focus:border-primary focus:outline-none transition-all">
-            <button type="button" (click)="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-              <span class="material-symbols-rounded">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
-            </button>
+        <div class="space-y-1">
+          <label class="text-[10px] ml-2 text-muted-foreground uppercase font-bold tracking-widest">Password</label>
+          <div class="relative group">
+            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm transition-colors group-focus-within:text-primary">
+              lock
+            </span>
+            <input 
+              [type]="showPassword() ? 'text' : 'password'" 
+              formControlName="password" 
+              placeholder="••••••••"
+              class="w-full bg-input border border-border rounded-[18px] py-4 px-12 text-foreground focus:border-primary/50 focus:outline-none transition-all text-sm placeholder:text-muted-foreground/30"
+            >
           </div>
+          @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
+            <span class="text-[10px] text-destructive ml-2">Password is required</span>
+          }
         </div>
 
-        <button type="submit" class="w-full bg-primary text-white py-4 rounded-[20px] font-bold hover:shadow-lg hover:shadow-primary/40 transition-all transform hover:scale-[1.02]">
-          SIGN IN
+        <button 
+          type="submit" 
+          [disabled]="loginForm.invalid || isLoading()" 
+          class="w-full bg-primary text-white py-4 rounded-[18px] font-bold mt-4 hover:shadow-[0_0_20px_rgba(135,80,166,0.3)] transition-all transform active:scale-95 disabled:opacity-30 uppercase tracking-widest text-xs flex items-center justify-center gap-2"
+        >
+          @if (isLoading()) {
+            <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            <span>Authenticating...</span>
+          } @else {
+            <span>Sign In</span>
+          }
         </button>
       </form>
 
-      <p class="mt-8 text-center text-muted-foreground text-sm">
-        New here? <a routerLink="/register" class="text-primary font-bold hover:underline">Create an account</a>
-      </p>
+      <div class="mt-8 pt-6 border-t border-white/5 text-center">
+        <p class="text-muted-foreground text-[11px] uppercase tracking-tighter">
+          Don't have an account? 
+          <a routerLink="/register" class="text-primary font-bold hover:underline ml-1">Create Account</a>
+        </p>
+      </div>
     </div>
+    
+    <p class="text-center mt-6 text-muted-foreground/30 text-[10px] uppercase tracking-[0.3em]">
+      End-to-End Encrypted Chat System
+    </p>
   </div>
 </div>

@@ -13,6 +13,7 @@ public class Room {
 
     private String name;
     private boolean isGroup;
+    private boolean isBotRoom = false;
 
     @ManyToMany
     @JoinTable(

@@ -1,6 +1,7 @@
 package chatrealtime.demo.controller;
 
 import chatrealtime.demo.dto.ChatMessageDTO;
+import chatrealtime.demo.dto.MessageRequest;
 import chatrealtime.demo.model.Message;
 import chatrealtime.demo.model.Room;
 import chatrealtime.demo.service.AIService;
@@ -28,9 +29,10 @@ public class ChatController {
 
     @MessageMapping("/chat/{roomId}")
     public void handleMessage(@DestinationVariable Long roomId,
-                              @Payload String content,
+                              @Payload MessageRequest request,
                               Principal principal) {
 
+        String content = request.content();
         String username = (principal != null) ? principal.getName() : "Usuario";
 
         // 1. Procesar y enviar el mensaje del usuario

@@ -38,7 +38,10 @@ public class RoomController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long targetUserId) {
         return ResponseEntity.ok(
-                roomService.getOrCreatePrivateChat(userService.findByUsername(userDetails.getUsername()).orElseThrow().getId(), targetUserId)
+                roomService.getOrCreatePrivateChat(
+                        userService.findByUsername(userDetails.getUsername()).orElseThrow().getId(),
+                        targetUserId
+                )
         );
     }
 

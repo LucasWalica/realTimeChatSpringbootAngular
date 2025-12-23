@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,67 +41,56 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-chat")
-                .setAllowedOrigins("http://localhost:4200") // ❌ No uses setAllowedOriginPatterns("*") con cookies
                 .setAllowedOriginPatterns("http://localhost:4200")
-                .withSockJS()
-                .setSessionCookieNeeded(true); // Ayuda a SockJS con las cookies
+                .addInterceptors(new HttpSessionHandshakeInterceptor())
+                .withSockJS();
     }
-
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-
-                if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    String token = extractToken(accessor);
-
-                    if (token != null) {
-                        try {
-                            String username = jwtService.extractUsername(token);
-                            if (username != null && jwtService.isTokenValid(token, username)) {
-                                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                                UsernamePasswordAuthenticationToken authentication =
-                                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                                accessor.setUser(authentication);
-                                System.out.println("✅ Usuario autenticado en WebSocket: " + username);
-                            }
-                        } catch (Exception e) {
-                            System.err.println("❌ Error validando Token en WebSocket: " + e.getMessage());
-                            // No dejamos pasar si el token está mal
-                            return null;
-                        }
-                    } else {
-                        System.err.println("⚠️ Intento de conexión WebSocket sin Token");
-                        // Para desarrollo puedes dejarlo pasar o retornar null para bloquear
-                        // return null;
-                    }
-                }
+                // Borra todo lo que hay dentro y solo pon esto:
                 return message;
             }
         });
     }
 
     private String extractToken(StompHeaderAccessor accessor) {
-        // 1. Intentar extraer de Header Authorization (Estándar STOMP/Angular)
+        // 1. Intentar extraer de Header Authorization (Lo más fiable si lo mandas desde Angular)
         String authHeader = accessor.getFirstNativeHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
+            String token = authHeader.substring(7);
+            System.out.println("✅ Token encontrado en Header Authorization");
+            return token;
         }
 
-        // 2. Intentar extraer de Cookies (Tu script de Node actual)
-        List<String> cookies = accessor.getNativeHeader("Cookie");
-        if (cookies != null && !cookies.isEmpty()) {
-            return cookies.stream()
+        // 2. Intentar extraer de las Cookies nativas del Frame STOMP
+        List<String> nativeCookies = accessor.getNativeHeader("Cookie");
+        if (nativeCookies != null && !nativeCookies.isEmpty()) {
+            String token = nativeCookies.stream()
                     .flatMap(cookie -> Arrays.stream(cookie.split(";")))
                     .map(String::trim)
                     .filter(c -> c.startsWith("jwt="))
                     .map(c -> c.substring(4))
                     .findFirst()
                     .orElse(null);
+            if (token != null) {
+                System.out.println("✅ Token encontrado en Native Header Cookies");
+                return token;
+            }
         }
 
+        // 3. Intentar extraer de los Atributos de Sesión (HttpSessionHandshakeInterceptor)
+        // Cuando usas .addInterceptors(new HttpSessionHandshakeInterceptor()) en la config,
+        // Spring a veces mueve las cookies o la sesión aquí.
+        var sessionAttributes = accessor.getSessionAttributes();
+        if (sessionAttributes != null && sessionAttributes.containsKey("jwt")) {
+            System.out.println("✅ Token encontrado en Session Attributes");
+            return (String) sessionAttributes.get("jwt");
+        }
+
+        System.err.println("❌ No se encontró ningún token en la petición WebSocket");
         return null;
     }
 }

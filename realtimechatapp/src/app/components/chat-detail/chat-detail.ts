@@ -46,7 +46,7 @@ export class ChatDetail implements AfterViewChecked {
 
   // Función para transformar el mensaje del Backend al formato del Front
   private mapMessage(msg: any) {
-    const myUsername = "test";
+    const myUsername = this.auth.getUsername();
     // this.auth.getUserName(); // Obtén el nombre del usuario logueado
     
     let senderType: 'me' | 'bot' | 'other' = 'other';

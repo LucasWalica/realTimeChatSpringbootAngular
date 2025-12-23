@@ -32,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 1. SALVOCONDUCTO: Si la ruta es pública o es el WebSocket, ignoramos el filtro
         String path = request.getRequestURI();
-        if (path.contains("/api/auth") || path.contains("/ws-chat")) {
+        if (path.contains("/api/auth") || path.contains("/ws-chat") || path.contains("/h2-console")) {
             filterChain.doFilter(request, response);
             return;
         }

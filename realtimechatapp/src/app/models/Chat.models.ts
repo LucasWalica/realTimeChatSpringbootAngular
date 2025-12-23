@@ -11,3 +11,7 @@ export interface Chat {
   unreadCount: number; // Esto suele ser una lógica de negocio o DTO
   online?: boolean;    // User.online
 }
+
+export interface InviteRequest {
+  inviteCode: string;
+}

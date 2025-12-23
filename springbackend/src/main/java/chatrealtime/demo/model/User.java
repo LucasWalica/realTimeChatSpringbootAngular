@@ -28,9 +28,11 @@ public class User implements UserDetails {
 
     private String avatar;
     private boolean online;
-
+    @Column(unique = true, nullable = false, length = 10)
+    private String userCode;
     @ManyToMany(mappedBy = "members")
     private Set<Room> rooms;
+
 
 
     @Override

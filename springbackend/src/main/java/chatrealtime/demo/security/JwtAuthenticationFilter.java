@@ -30,11 +30,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String servletPath = request.getServletPath();
-
         // 1. SALVOCONDUCTO: Si la ruta es pública o es el WebSocket, ignoramos el filtro
-        if (servletPath.contains("/api/auth") || servletPath.contains("/ws-chat")) {
-            System.err.println("-> Saltando filtro JWT para WebSocket");
+        String path = request.getRequestURI();
+        if (path.contains("/api/auth") || path.contains("/ws-chat")) {
             filterChain.doFilter(request, response);
             return;
         }

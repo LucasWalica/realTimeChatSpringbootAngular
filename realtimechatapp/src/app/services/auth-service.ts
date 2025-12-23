@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { apiurl } from '../environ/env.api';
 
 @Injectable({
@@ -25,9 +25,25 @@ export class Auth {
    * Login siguiendo LoginRequestDTO (usa username y password)
    */
   login(username: string, password: string): Observable<any> {
-    // Cambiado 'email' por 'username' para coincidir con LoginRequestDTO.java
-    const data = { username, password };
-    return this.http.post(`${this.authUrl}login`, data, { withCredentials: true });
+  const data = { username, password };
+  return this.http.post<any>(`${this.authUrl}login`, data, { withCredentials: true }).pipe(
+    tap(response => {
+      if (response.code) {
+        // Guardamos el código para que persista al recargar
+        localStorage.setItem('userCode', response.code);
+        localStorage.setItem('username', username);
+      }
+    })
+  );
+  }
+
+  // Método para recuperar el código fácilmente
+  getUserCode(): string | null {
+    return localStorage.getItem('userCode');
+  }
+
+  getUsername(): string | null {
+    return localStorage.getItem('username');
   }
 
   /**

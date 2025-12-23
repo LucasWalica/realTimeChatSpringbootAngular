@@ -13,7 +13,7 @@
     </div>
 
     <div class="group relative">
-      
+      <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors">search</span>
       <input
         type="text"
         [(ngModel)]="searchQuery"
@@ -71,12 +71,85 @@
     }
   </div>
 
+  <div class="mx-4 mb-2 p-3 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30 shadow-inner">
+        <span class="text-primary font-bold text-sm">{{ currentUsername()?.charAt(0).toUpperCase() }}</span>
+      </div>
+      
+      <div class="flex-1 min-w-0">
+        <p class="text-foreground text-xs font-bold truncate leading-tight">{{ currentUsername() }}</p>
+        
+        <button 
+          (click)="copyCode()"
+          class="flex items-center gap-1.5 group mt-0.5 hover:opacity-80 transition-all cursor-pointer"
+          title="Click to copy your unique code"
+        >
+          <span class="text-muted-foreground/50 text-[10px] font-mono tracking-widest group-hover:text-primary transition-colors">
+            {{ currentUserCode() || '#0000' }}
+          </span>
+          <span class="material-symbols-rounded text-[14px] text-muted-foreground/20 group-hover:text-primary">content_copy</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="p-6 border-t border-border bg-white/[0.01]">
     <button 
       (click)="openNewConversation()"
       class="w-full bg-primary text-white py-4 rounded-2xl flex items-center justify-center gap-3 hover:shadow-[0_8px_20px_rgba(135,80,166,0.3)] transition-all transform active:scale-95 border border-white/10"
     >
+      <span class="material-symbols-rounded text-sm">add</span>
       <span class="font-bold uppercase tracking-[0.2em] text-[10px]">New Chat</span>
     </button>
   </div>
+
+  @if (showInviteModal()) {
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div class="absolute inset-0 bg-background/60 backdrop-blur-md" (click)="closeModal()"></div>
+      
+      <div class="glass w-full max-w-sm p-8 rounded-[32px] border border-white/10 relative z-10 shadow-2xl animate-in zoom-in-95 duration-300">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center">
+            <span class="material-symbols-rounded text-primary">person_add</span>
+          </div>
+          <div>
+            <h3 class="text-foreground font-bold text-xl">Add Friend</h3>
+            <p class="text-muted-foreground text-xs">Start a private chat via code</p>
+          </div>
+        </div>
+
+        <form [formGroup]="inviteForm" (ngSubmit)="submitInvite()" class="space-y-6">
+          <div class="space-y-2">
+            <label class="text-[10px] uppercase tracking-widest text-muted-foreground font-bold ml-1">User Code</label>
+            <input
+              type="text"
+              formControlName="inviteCode"
+              placeholder="e.g. LUC-1234"
+              class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-foreground placeholder:text-muted-foreground/30 focus:border-primary/50 focus:bg-white/10 focus:outline-none transition-all shadow-inner"
+              [class.border-destructive/50]="inviteForm.get('inviteCode')?.invalid && inviteForm.get('inviteCode')?.touched"
+            />
+            @if (inviteForm.get('inviteCode')?.invalid && inviteForm.get('inviteCode')?.touched) {
+              <p class="text-[10px] text-destructive ml-1">Please enter a valid code (min. 4 chars)</p>
+            }
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button 
+              type="button"
+              (click)="closeModal()"
+              class="flex-1 py-4 rounded-2xl text-muted-foreground hover:bg-white/5 transition-all text-xs font-bold uppercase tracking-widest">
+              Cancel
+            </button>
+            <button 
+              type="submit"
+              [disabled]="inviteForm.invalid"
+              class="flex-1 bg-primary text-white py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+              Connect
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
 </div>

@@ -37,7 +37,7 @@ public class AIService {
                 .header("X-Title", "ChatLucas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of(
-                        "model", "allenai/olmo-3.1-32b-think:free",
+                        "model", "google/gemini-2.0-flash-exp:free",
                         "messages", List.of(Map.of("role", "user", "content", userPrompt))
                 ))
                 .retrieve()

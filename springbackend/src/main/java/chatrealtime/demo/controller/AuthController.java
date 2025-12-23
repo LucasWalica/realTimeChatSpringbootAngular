@@ -65,8 +65,10 @@ public class AuthController {
             cookie.setPath("/");
             cookie.setMaxAge(24 * 60 * 60);
             response.addCookie(cookie);
+            User user = userService.findByUsername(loginDto.getUsername())
+                    .orElseThrow();
 
-            return ResponseEntity.ok(Map.of("message", "Login exitoso"));
+            return ResponseEntity.ok(Map.of("message", "Login exitoso", "code", user.getUserCode()));
 
         } catch (AuthenticationException e) {
             // Si entra aquí, el 403 era en realidad un "Usuario o password incorrectos"
